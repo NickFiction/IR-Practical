@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <math.h>
+
+int main() {
+    int total_retrieved = 0;    // Total number of documents retrieved
+    int total_relevant = 0;    // Total number of relevant documents
+    int true_positives = 0;    // Number of relevant documents correctly retrieved
+
+    // Sample input data
+    int num_retrieved = 5;      // Total number of retrieved documents
+    int retrieved_documents[] = {1, 2, 3, 4, 5}; // IDs of the retrieved documents
+    int num_relevant = 3;       // Total number of relevant documents
+    int relevant_documents[] = {2, 4, 6};         // IDs of the relevant documents
+
+    for (int i = 0; i < num_retrieved; i++) {
+        for (int j = 0; j < num_relevant; j++) {
+            if (retrieved_documents[i] == relevant_documents[j]) {
+                true_positives++;
+                break;
+            }
+        }
+    }
+
+    total_retrieved = num_retrieved;
+    total_relevant = num_relevant;
+
+    double precision = (double)true_positives / total_retrieved;
+    double recall = (double)true_positives / total_relevant;
+
+    // Calculate the F-measure
+    double f_measure = (2 * precision * recall) / (precision + recall);
+
+    // Calculate the E-measure with beta = 1 (equivalent to F-measure)
+    double e_measure_f1 = (1 + 1 * 1) * (precision * recall) / (1 * 1 * precision + recall);
+
+    // Calculate the E-measure with a custom beta value (e.g., beta = 2)
+    double custom_beta = 2;
+    double e_measure_custom = (1 + custom_beta * custom_beta) * (precision * recall) / (custom_beta * custom_beta * precision + recall);
+
+    printf("Precision: %.2lf\n", precision);
+    printf("Recall: %.2lf\n", recall);
+    printf("F-measure (F1): %.2lf\n", f_measure);
+    printf("E-measure (beta = 1): %.2lf\n", e_measure_f1);
+    printf("E-measure (beta = 2): %.2lf\n", e_measure_custom);
+
+    return 0;
+}
