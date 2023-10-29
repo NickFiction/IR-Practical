@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_DOCUMENTS 10
+#define MAX_TERMS 10
+#define MAX_TERM_LENGTH 20
+
+// Structure to represent a document
+typedef struct {
+    int id;
+    char content[1000];
+} Document;
+
+// Structure to represent an inverted index
+typedef struct {
+    char term[MAX_TERM_LENGTH];
+    int documents[MAX_DOCUMENTS];
+    int doc_count;
+} InvertedIndex;
+
+Document documents[MAX_DOCUMENTS];
+InvertedIndex invertedIndex[MAX_TERMS];
+
+// Function to build the inverted index
+void buildInvertedIndex() {
+    for (int i = 0; i < MAX_DOCUMENTS; i++) {
+        char* content = documents[i].content;
+        char* token = strtok(content, " .,;:!?\n");
+
+        while (token != NULL) {
+            // Normalize the term (convert to lowercase)
+            char term[MAX_TERM_LENGTH];
+            strcpy(term, token);
+            for (int j = 0; term[j]; j++) {
+                term[j] = tolower(term[j]);
+            }
+
+            // Add the document to the inverted index
+            for (int j = 0; j < MAX_TERMS; j++) {
+                if (strcmp(invertedIndex[j].term, term) == 0) {
+                    invertedIndex[j].documents[invertedIndex[j].doc_count++] = i;
+                    break;
+                }
+                else if (strlen(invertedIndex[j].term) == 0) {
+                    strcpy(invertedIndex[j].term, term);
+                    invertedIndex[j].documents[invertedIndex[j].doc_count++] = i;
+                    break;
+                }
+            }
+
+            token = strtok(NULL, " .,;:!?\n");
+        }
+    }
+}
+
+// Function to retrieve documents for a query
+void retrieveDocuments(const char* query) {
+    printf("Matching Documents for query: %s\n", query);
+
+    char queryTerm[MAX_TERM_LENGTH];
+    strcpy(queryTerm, query);
+    for (int j = 0; queryTerm[j]; j++) {
+        queryTerm[j] = tolower(queryTerm[j]);
+    }
+
+    for (int i = 0; i < MAX_TERMS; i++) {
+        if (strcmp(invertedIndex[i].term, queryTerm) == 0) {
+            printf("Matching Documents: ");
+            for (int j = 0; j < invertedIndex[i].doc_count; j++) {
+                printf("Doc%d ", invertedIndex[i].documents[j]);
+            }
+            printf("\n");
+            return;
+        }
+    }
+
+    printf("No matching documents found.\n");
+}
+
+int main() {
+    // Create sample documents
+    documents[0].id = 0;
+    strcpy(documents[0].content, "This is the first document.");
+    documents[1].id = 1;
+    strcpy(documents[1].content, "The second document contains some text.");
+    documents[2].id = 2;
+    strcpy(documents[2].content, "This is another document.");
+
+    // Build the inverted index
+    buildInvertedIndex();
+
+    // Query the documents
+    retrieveDocuments("document");
+    retrieveDocuments("text");
+    retrieveDocuments("inverted");
+    retrieveDocuments("algorithm");
+
+    return 0;
+}
