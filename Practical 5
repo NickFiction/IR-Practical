@@ -1,0 +1,37 @@
+#First, make sure you have Scrapy installed
+pip install scrapy
+#Create a Scrapy project:
+scrapy startproject ecommerce_crawler
+
+#Code
+import scrapy
+
+class EcommerceSpider(scrapy.Spider):
+    name = 'ecommerce'
+    start_urls = ['https://example.com']  # Replace with the e-commerce website URL
+
+    def parse(self, response):
+        # Extract product links from the category page (replace with actual CSS selectors)
+        product_links = response.css('a.product-link::attr(href)').getall()
+
+        for product_link in product_links:
+            yield response.follow(product_link, callback=self.parse_product_page)
+
+        # Follow pagination links if applicable (replace with actual CSS selectors)
+        next_page = response.css('a.next-page::attr(href)').get()
+        if next_page:
+            yield response.follow(next_page, callback=self.parse)
+
+    def parse_product_page(self, response):
+        # Extract product information from the product page (replace with actual CSS selectors)
+        product_title = response.css('h1.product-title::text').get().strip()
+        product_price = response.css('span.product-price::text').get().strip()
+        product_description = response.css('div.product-description::text').get().strip()
+
+        yield {
+            'title': product_title,
+            'price': product_price,
+            'description': product_description,
+        }
+#Run the spider to start crawling:
+scrapy crawl ecommerce -o products.json
