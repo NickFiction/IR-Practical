@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_WORD_LENGTH 50
+#define MAX_TEXT_LENGTH 10000
+
+// Structure to store word frequency
+typedef struct {
+    char word[MAX_WORD_LENGTH];
+    int frequency;
+} WordFrequency;
+
+// Function to normalize a word (convert to lowercase)
+void normalizeWord(char* word) {
+    int len = strlen(word);
+    for (int i = 0; i < len; i++) {
+        word[i] = tolower(word[i]);
+    }
+}
+
+// Function to extract keywords and their frequencies from a text
+void extractKeywords(char* text, WordFrequency* keywords, int* numKeywords) {
+    *numKeywords = 0;
+    char* token = strtok(text, " .,;:!?\n");
+
+    while (token != NULL) {
+        normalizeWord(token);
+        int found = 0;
+        for (int i = 0; i < *numKeywords; i++) {
+            if (strcmp(keywords[i].word, token) == 0) {
+                keywords[i].frequency++;
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            if (*numKeywords < MAX_WORD_LENGTH) {
+                strcpy(keywords[*numKeywords].word, token);
+                keywords[*numKeywords].frequency = 1;
+                (*numKeywords)++;
+            }
+        }
+
+        token = strtok(NULL, " .,;:!?\n");
+    }
+}
+
+// Function to find the most frequent keywords
+void findTopKeywords(WordFrequency* keywords, int numKeywords, WordFrequency* topKeywords, int numTop) {
+    for (int i = 0; i < numTop; i++) {
+        int maxIndex = 0;
+        for (int j = 1; j < numKeywords; j++) {
+            if (keywords[j].frequency > keywords[maxIndex].frequency) {
+                maxIndex = j;
+            }
+        }
+        topKeywords[i] = keywords[maxIndex];
+        keywords[maxIndex].frequency = -1; // Mark as visited
+    }
+}
+
+int main() {
+    char text[MAX_TEXT_LENGTH];
+    WordFrequency keywords[MAX_WORD_LENGTH];
+    WordFrequency topKeywords[MAX_WORD_LENGTH];
+    int numKeywords = 0;
+    int numTopKeywords = 5; // Number of top keywords to include in the representative document
+
+    // Read text from a file or user input
+    printf("Enter the text:\n");
+    fgets(text, MAX_TEXT_LENGTH, stdin);
+
+    // Extract keywords and their frequencies
+    extractKeywords(text, keywords, &numKeywords);
+
+    // Find the most frequent keywords
+    findTopKeywords(keywords, numKeywords, topKeywords, numTopKeywords);
+
+    // Generate the representative document using top keywords
+    printf("Representative Document:\n");
+    for (int i = 0; i < numTopKeywords; i++) {
+        printf("%s ", topKeywords[i].word);
+    }
+    printf("\n");
+
+    return 0;
+}
